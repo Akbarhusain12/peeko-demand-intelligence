@@ -182,7 +182,7 @@ pip install flask flask-cors pandas numpy xgboost scikit-learn
 
 ### 2. Download the dataset
 
-Get the Instacart Market Basket Analysis dataset from [Kaggle](https://www.kaggle.com/competitions/instacart-market-basket-analysis/data).
+Get the Instacart Market Basket Analysis dataset from [Kaggle](https://www.kaggle.com/datasets/yasserh/instacart-online-grocery-basket-analysis-dataset).
 
 Required files:
 ```
@@ -281,27 +281,3 @@ critical_restock_list.columns:
 | 🟠 High | 11 – 20 units | Order within 48 hours |
 | 🔵 Medium | 5 – 10 units | Order this week |
 | 🟢 Low | 1 – 4 units | Schedule for next cycle |
-
----
-
-## 🔮 Production Roadmap
-
-- [ ] Replace simulated inventory with real database (PostgreSQL / BigQuery)
-- [ ] Schedule pipeline nightly via Airflow or cron
-- [ ] Add Optuna hyperparameter tuning
-- [ ] Replace median interval with XGBoost for cold-start users (< 2 purchases)
-- [ ] Add SHAP values for per-prediction explainability
-- [ ] Containerise with Docker + deploy on AWS ECS or GCP Cloud Run
-- [ ] Add push notifications when a product crosses the Critical threshold
-
----
-
-## 👤 Author
-
-Built as a final year MCA project — specifically designed to solve real demand forecasting challenges in quick commerce baby product delivery.
-
----
-
-## 📄 License
-
-MIT License — free to use, modify, and build on.
