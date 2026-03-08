@@ -1,0 +1,1395 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Peeko — Demand Intelligence</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      :root {
+        --bg: #f7f7f5;
+        --white: #ffffff;
+        --border: #e8e8e4;
+        --border2: #d4d4ce;
+        --text: #1a1a18;
+        --muted: #888880;
+        --soft: #b8b8b0;
+        --accent: #2d6a4f;
+        --acc-lt: #e8f4ef;
+        --warn: #c0392b;
+        --warn-lt: #fdf0ee;
+        --amber: #b45309;
+        --amb-lt: #fef3e2;
+        --blue: #1d4ed8;
+        --blue-lt: #eff3ff;
+        --sans: "DM Sans", sans-serif;
+        --mono: "DM Mono", monospace;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--sans);
+        font-size: 14px;
+        line-height: 1.5;
+        min-height: 100vh;
+      }
+
+      /* ── NAV ── */
+      nav {
+        background: var(--white);
+        border-bottom: 1px solid var(--border);
+        padding: 0 40px;
+        height: 54px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+      }
+      .nav-left {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .brand-dot {
+        width: 7px;
+        height: 7px;
+        background: var(--accent);
+        border-radius: 50%;
+      }
+      .brand-name {
+        font-size: 15px;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+      }
+      .brand-sep {
+        width: 1px;
+        height: 14px;
+        background: var(--border);
+        margin: 0 2px;
+      }
+      .brand-sub {
+        font-size: 13px;
+        color: var(--muted);
+        font-weight: 400;
+      }
+      .nav-right {
+        display: flex;
+        align-items: center;
+        gap: 18px;
+      }
+      .status-chip {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        color: var(--muted);
+        font-family: var(--mono);
+      }
+      .status-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--accent);
+        animation: blink 2.5s infinite;
+      }
+      .status-dot.offline {
+        background: var(--warn);
+        animation: none;
+      }
+      @keyframes blink {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.3;
+        }
+      }
+      .nav-time {
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--soft);
+      }
+
+      /* ── PAGE ── */
+      .page {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 32px 40px 60px;
+        display: flex;
+        flex-direction: column;
+        gap: 28px;
+      }
+
+      /* ── HEADER ── */
+      .page-header {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 16px;
+        padding-bottom: 28px;
+        border-bottom: 1px solid var(--border);
+      }
+      .page-title {
+        font-size: 21px;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+      }
+      .page-desc {
+        font-size: 13px;
+        color: var(--muted);
+        margin-top: 4px;
+      }
+      .btn-row {
+        display: flex;
+        gap: 8px;
+      }
+      .btn {
+        height: 34px;
+        padding: 0 16px;
+        border-radius: 6px;
+        border: 1px solid var(--border);
+        background: var(--white);
+        color: var(--text);
+        font-family: var(--sans);
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.14s;
+      }
+      .btn:hover {
+        border-color: var(--border2);
+        background: var(--bg);
+      }
+      .btn-primary {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: #fff;
+      }
+      .btn-primary:hover {
+        background: #235c43;
+        border-color: #235c43;
+      }
+
+      /* ── KPI GRID ── */
+      .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 12px;
+      }
+      @media (max-width: 1100px) {
+        .kpi-grid {
+          grid-template-columns: repeat(3, 1fr);
+        }
+      }
+      @media (max-width: 700px) {
+        .kpi-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+      .kpi-card {
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 20px 20px 16px;
+        transition: box-shadow 0.15s;
+      }
+      .kpi-card:hover {
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+      }
+      .kpi-label {
+        font-size: 11px;
+        font-weight: 500;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .kpi-value {
+        font-size: 28px;
+        font-weight: 600;
+        letter-spacing: -0.03em;
+        margin: 8px 0 4px;
+        font-family: var(--mono);
+        color: var(--text);
+      }
+      .kpi-meta {
+        font-size: 11px;
+        color: var(--soft);
+      }
+      .kpi-card.warn .kpi-value {
+        color: var(--warn);
+      }
+      .kpi-card.green .kpi-value {
+        color: var(--accent);
+      }
+
+      /* ── MODEL METRICS BANNER ── */
+      .model-banner {
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-left: 3px solid var(--accent);
+        border-radius: 10px;
+        padding: 16px 20px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .model-tag {
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--white);
+        background: var(--accent);
+        padding: 3px 10px;
+        border-radius: 4px;
+        margin-right: 4px;
+      }
+      .metric-chip {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 4px 12px;
+        font-family: var(--mono);
+        font-size: 12px;
+      }
+      .metric-chip .mc-label {
+        color: var(--muted);
+        font-size: 11px;
+      }
+      .metric-chip .mc-val {
+        color: var(--text);
+        font-weight: 500;
+      }
+
+      /* ── SECTION HEAD ── */
+      .section-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-bottom: 12px;
+      }
+      .section-label {
+        font-size: 13px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .count-tag {
+        font-family: var(--mono);
+        font-size: 11px;
+        font-weight: 400;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        color: var(--muted);
+        padding: 1px 8px;
+        border-radius: 20px;
+      }
+
+      /* ── CARD ── */
+      .card {
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        overflow: hidden;
+      }
+
+      /* ── CHART ── */
+      .chart-body {
+        padding: 20px;
+        height: 236px;
+      }
+      .range-tabs {
+        display: flex;
+        gap: 4px;
+      }
+      .range-btn {
+        height: 28px;
+        padding: 0 12px;
+        border-radius: 5px;
+        border: 1px solid var(--border);
+        background: transparent;
+        font-family: var(--sans);
+        font-size: 12px;
+        color: var(--muted);
+        cursor: pointer;
+        transition: all 0.12s;
+      }
+      .range-btn:hover {
+        color: var(--text);
+        border-color: var(--border2);
+      }
+      .range-btn.active {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: #fff;
+      }
+
+      /* ── TWO-COL ── */
+      .two-col {
+        display: grid;
+        grid-template-columns: 1.6fr 1fr;
+        gap: 16px;
+        align-items: start;
+      }
+      @media (max-width: 900px) {
+        .two-col {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      /* ── TABLE ── */
+      .table-toolbar {
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .search-input {
+        height: 32px;
+        padding: 0 12px;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        background: var(--bg);
+        font-family: var(--sans);
+        font-size: 13px;
+        color: var(--text);
+        outline: none;
+        flex: 1;
+        min-width: 140px;
+        transition: border-color 0.12s;
+      }
+      .search-input:focus {
+        border-color: var(--accent);
+      }
+      .search-input::placeholder {
+        color: var(--soft);
+      }
+      .filter-sel {
+        height: 32px;
+        padding: 0 10px;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        background: var(--bg);
+        font-family: var(--sans);
+        font-size: 12px;
+        color: var(--text);
+        outline: none;
+        cursor: pointer;
+      }
+      .tbl-wrap {
+        overflow-x: auto;
+        max-height: 420px;
+        overflow-y: auto;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      thead th {
+        padding: 10px 16px;
+        font-size: 11px;
+        font-weight: 500;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--muted);
+        background: var(--bg);
+        border-bottom: 1px solid var(--border);
+        text-align: left;
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        cursor: pointer;
+        white-space: nowrap;
+        user-select: none;
+      }
+      thead th:hover {
+        color: var(--text);
+      }
+      thead th.sorted {
+        color: var(--accent);
+      }
+      tbody tr {
+        border-bottom: 1px solid var(--border);
+        transition: background 0.1s;
+      }
+      tbody tr:last-child {
+        border-bottom: none;
+      }
+      tbody tr:hover {
+        background: #fafaf8;
+      }
+      td {
+        padding: 10px 16px;
+        font-size: 13px;
+      }
+      .mono {
+        font-family: var(--mono);
+        font-size: 12px;
+      }
+
+      /* ── PILLS ── */
+      .pill {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 500;
+      }
+      .pill-red {
+        background: var(--warn-lt);
+        color: var(--warn);
+      }
+      .pill-amber {
+        background: var(--amb-lt);
+        color: var(--amber);
+      }
+      .pill-blue {
+        background: var(--blue-lt);
+        color: var(--blue);
+      }
+      .pill-green {
+        background: var(--acc-lt);
+        color: var(--accent);
+      }
+
+      /* ── BAR ── */
+      .mini-bar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .bar-track {
+        flex: 1;
+        height: 4px;
+        background: var(--border);
+        border-radius: 2px;
+        overflow: hidden;
+        min-width: 48px;
+      }
+      .bar-fill {
+        height: 100%;
+        border-radius: 2px;
+        transition: width 0.5s ease;
+      }
+
+      /* ── SIDE PANELS ── */
+      .side-stack {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+      .stat-list {
+        padding: 4px 0;
+      }
+      .stat-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 11px 20px;
+        border-bottom: 1px solid var(--border);
+      }
+      .stat-row:last-child {
+        border-bottom: none;
+      }
+      .stat-label {
+        font-size: 13px;
+        color: var(--muted);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .stat-val {
+        font-family: var(--mono);
+        font-size: 15px;
+        font-weight: 500;
+        color: var(--text);
+      }
+
+      /* ── TIMELINE ── */
+      .tl-list {
+        padding: 4px 0;
+      }
+      .tl-row {
+        display: flex;
+        gap: 14px;
+        padding: 11px 20px;
+        border-bottom: 1px solid var(--border);
+        align-items: flex-start;
+      }
+      .tl-row:last-child {
+        border-bottom: none;
+      }
+      .tl-index {
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--soft);
+        min-width: 20px;
+        padding-top: 2px;
+      }
+      .tl-pid {
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--accent);
+        font-weight: 500;
+      }
+      .tl-date {
+        font-size: 11px;
+        color: var(--muted);
+        margin-top: 2px;
+      }
+      .tl-qty {
+        margin-left: auto;
+        font-family: var(--mono);
+        font-size: 12px;
+        font-weight: 500;
+        white-space: nowrap;
+        padding-top: 1px;
+      }
+
+      /* ── TABLE FOOTER ── */
+      .tbl-foot {
+        padding: 8px 16px;
+        font-size: 11px;
+        color: var(--soft);
+        border-top: 1px solid var(--border);
+        font-family: var(--mono);
+      }
+
+      /* ── FOOTER ── */
+      footer {
+        border-top: 1px solid var(--border);
+        background: var(--white);
+        padding: 14px 40px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 12px;
+        color: var(--soft);
+      }
+      .footer-links {
+        display: flex;
+        gap: 18px;
+      }
+      .footer-links a {
+        color: var(--soft);
+        text-decoration: none;
+      }
+      .footer-links a:hover {
+        color: var(--accent);
+      }
+
+      /* ── TOAST ── */
+      #toast {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        z-index: 999;
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-left: 3px solid var(--accent);
+        padding: 10px 16px;
+        border-radius: 7px;
+        font-size: 12px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.07);
+        transform: translateY(10px);
+        opacity: 0;
+        transition: all 0.22s;
+      }
+      #toast.show {
+        transform: translateY(0);
+        opacity: 1;
+      }
+
+      /* ── ANIMATIONS ── */
+      .fi {
+        opacity: 0;
+        transform: translateY(8px);
+        animation: up 0.4s ease forwards;
+      }
+      @keyframes up {
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .d1 {
+        animation-delay: 0.06s;
+      }
+      .d2 {
+        animation-delay: 0.12s;
+      }
+      .d3 {
+        animation-delay: 0.18s;
+      }
+      .d4 {
+        animation-delay: 0.24s;
+      }
+      .d5 {
+        animation-delay: 0.3s;
+      }
+
+      /* ── SCROLLBAR ── */
+      ::-webkit-scrollbar {
+        width: 5px;
+        height: 5px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: var(--border);
+        border-radius: 3px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: var(--border2);
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ════ NAV ════ -->
+    <nav>
+      <div class="nav-left">
+        <div class="brand-dot"></div>
+        <span class="brand-name">Peeko</span>
+        <div class="brand-sep"></div>
+        <span class="brand-sub">Demand Intelligence</span>
+      </div>
+      <div class="nav-right">
+        <div class="status-chip">
+          <div class="status-dot" id="statusDot"></div>
+          <span id="statusText">Connecting</span>
+        </div>
+        <div class="nav-time" id="clock"></div>
+      </div>
+    </nav>
+
+    <div class="page">
+      <!-- ════ HEADER ════ -->
+      <div class="page-header fi">
+        <div>
+          <div class="page-title">Baby Product Demand Forecast</div>
+          <div class="page-desc">
+            XGBoost-powered reorder predictions · purchase history → demand
+            forecast → restock action board
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" onclick="refreshData()">
+            ↻ &nbsp;Refresh
+          </button>
+          <button class="btn" onclick="exportCSV()">↓ &nbsp;Export CSV</button>
+        </div>
+      </div>
+
+      <!-- ════ KPI CARDS ════ -->
+      <div class="kpi-grid fi d2">
+        <div class="kpi-card">
+          <div class="kpi-label">Baby SKUs Tracked</div>
+          <div class="kpi-value" id="kpi-skus">—</div>
+          <div class="kpi-meta">department_id = 18</div>
+        </div>
+        <div class="kpi-card warn">
+          <div class="kpi-label">Critical Restock</div>
+          <div class="kpi-value" id="kpi-critical">—</div>
+          <div class="kpi-meta">units_to_order &gt; 0</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Forecast Rows</div>
+          <div class="kpi-value" id="kpi-rows">—</div>
+          <div class="kpi-meta">prediction events</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Avg Order Qty</div>
+          <div class="kpi-value" id="kpi-avg">—</div>
+          <div class="kpi-meta">across critical SKUs</div>
+        </div>
+        <div class="kpi-card green">
+          <div class="kpi-label">Forecast Horizon</div>
+          <div class="kpi-value" id="kpi-horizon">—</div>
+          <div class="kpi-meta">days from today</div>
+        </div>
+      </div>
+
+      <!-- ════ DEMAND CHART ════ -->
+      <div class="fi d3">
+        <div class="section-head">
+          <div class="section-label">
+            Demand Forecast Timeline
+            <span class="count-tag" id="chartBadge">—</span>
+          </div>
+          <div class="range-tabs">
+            <button class="range-btn active" onclick="setChartRange(30, this)">
+              30d
+            </button>
+            <button class="range-btn" onclick="setChartRange(60, this)">
+              60d
+            </button>
+            <button class="range-btn" onclick="setChartRange(90, this)">
+              90d
+            </button>
+            <button class="range-btn" onclick="setChartRange(0, this)">
+              All
+            </button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="chart-body"><canvas id="demandChart"></canvas></div>
+        </div>
+      </div>
+
+      <!-- ════ RESTOCK TABLE + SIDE PANELS ════ -->
+      <div class="two-col fi d4">
+        <!-- Restock table -->
+        <div>
+          <div class="section-head">
+            <div class="section-label">
+              Restock Action Board
+              <span class="count-tag" id="restockBadge">—</span>
+            </div>
+          </div>
+          <div class="card">
+            <div class="table-toolbar">
+              <input
+                class="search-input"
+                id="searchInput"
+                type="text"
+                placeholder="Search product ID…"
+                oninput="filterTable()"
+              />
+              <select
+                class="filter-sel"
+                id="urgencyFilter"
+                onchange="filterTable()"
+              >
+                <option value="all">All urgency</option>
+                <option value="critical">Critical (&gt;20)</option>
+                <option value="high">High (11–20)</option>
+                <option value="medium">Medium (5–10)</option>
+                <option value="low">Low (1–4)</option>
+              </select>
+            </div>
+            <div class="tbl-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th onclick="sortTable('product_id')" data-col="product_id">
+                      Product ID
+                    </th>
+                    <th
+                      onclick="sortTable('next_restock_date')"
+                      data-col="next_restock_date"
+                    >
+                      Next Date
+                    </th>
+                    <th
+                      onclick="sortTable('total_demand_units')"
+                      data-col="total_demand_units"
+                    >
+                      Total Demand
+                    </th>
+                    <th
+                      onclick="sortTable('current_stock')"
+                      data-col="current_stock"
+                    >
+                      Stock
+                    </th>
+                    <th
+                      onclick="sortTable('units_to_order')"
+                      data-col="units_to_order"
+                    >
+                      Order Qty
+                    </th>
+                    <th onclick="sortTable('date_count')" data-col="date_count">
+                      Dates
+                    </th>
+                    <th>Level</th>
+                  </tr>
+                </thead>
+                <tbody id="restockBody">
+                  <tr>
+                    <td
+                      colspan="7"
+                      style="
+                        text-align: center;
+                        color: var(--soft);
+                        padding: 28px;
+                      "
+                    >
+                      Loading…
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="tbl-foot" id="tableFooter"></div>
+          </div>
+        </div>
+
+        <!-- Side panels -->
+        <div class="side-stack">
+          <!-- Due next 7 days -->
+          <div>
+            <div class="section-head">
+              <div class="section-label">Due in Next 7 Days</div>
+            </div>
+            <div class="card">
+              <div class="tl-list" id="upcomingList">
+                <div style="padding: 20px; color: var(--soft); font-size: 13px">
+                  Loading…
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Urgency breakdown -->
+          <div>
+            <div class="section-head">
+              <div class="section-label">Urgency Breakdown</div>
+            </div>
+            <div class="card">
+              <div class="stat-list">
+                <div class="stat-row">
+                  <span class="stat-label"
+                    ><span class="pill pill-red">Critical</span> &gt;20
+                    units</span
+                  >
+                  <span class="stat-val" id="urg-critical">—</span>
+                </div>
+                <div class="stat-row">
+                  <span class="stat-label"
+                    ><span class="pill pill-amber">High</span> 11–20 units</span
+                  >
+                  <span class="stat-val" id="urg-high">—</span>
+                </div>
+                <div class="stat-row">
+                  <span class="stat-label"
+                    ><span class="pill pill-blue">Medium</span> 5–10 units</span
+                  >
+                  <span class="stat-val" id="urg-medium">—</span>
+                </div>
+                <div class="stat-row">
+                  <span class="stat-label"
+                    ><span class="pill pill-green">Low</span> 1–4 units</span
+                  >
+                  <span class="stat-val" id="urg-low">—</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- /page -->
+
+    <!-- ════ FOOTER ════ -->
+    <footer>
+      <span
+        >Peeko · XGBoost Demand Intelligence · <span id="footerYear"></span
+      ></span>
+      <div class="footer-links">
+        <a href="/api/health" target="_blank">Health</a>
+        <a href="/api/model-metrics" target="_blank">Model Metrics</a>
+        <a href="/api/predictions" target="_blank">Predictions JSON</a>
+        <a href="/api/restock" target="_blank">Restock JSON</a>
+      </div>
+    </footer>
+
+    <div id="toast"></div>
+
+    <script>
+      /* ── Config ── */
+      const API_BASE = "";
+      const USE_MOCK = false;
+
+      /* ── State ── */
+      let allRestock = [],
+        allPred = [],
+        demandChart;
+      let sortState = { col: "units_to_order", dir: -1 };
+
+      /* ── Clock ── */
+      function tick() {
+        document.getElementById("clock").textContent =
+          new Date().toLocaleTimeString("en-IN", { hour12: false }) + " IST";
+      }
+      setInterval(tick, 1000);
+      tick();
+      document.getElementById("footerYear").textContent =
+        new Date().getFullYear();
+
+      /* ── Toast ── */
+      function toast(msg) {
+        const el = document.getElementById("toast");
+        el.textContent = msg;
+        el.classList.add("show");
+        setTimeout(() => el.classList.remove("show"), 3200);
+      }
+
+      /* ── Status ── */
+      function setStatus(online) {
+        document
+          .getElementById("statusDot")
+          .classList.toggle("offline", !online);
+        document.getElementById("statusText").textContent = online
+          ? USE_MOCK
+            ? "Demo"
+            : "Connected"
+          : "Offline";
+      }
+
+      /* ── Mock data ── */
+      function generateMock() {
+        const today = new Date(),
+          preds = [],
+          restock = [];
+        const pool = Array.from(
+          { length: 80 },
+          () => Math.floor(Math.random() * 49000) + 1,
+        );
+        for (let d = 0; d < 120; d++) {
+          const dt = new Date(today);
+          dt.setDate(today.getDate() + d);
+          const ds = dt.toISOString().split("T")[0];
+          for (let i = 0; i < Math.floor(Math.random() * 8) + 1; i++) {
+            const pid = pool[Math.floor(Math.random() * pool.length)];
+            const demand = Math.floor(Math.random() * 28) + 1;
+            preds.push({
+              product_id: pid,
+              predicted_calendar_date: ds,
+              predicted_demand_units: demand,
+            });
+            const stock = Math.floor(Math.random() * 40);
+            if (demand > stock)
+              restock.push({
+                product_id: pid,
+                next_restock_date: ds,
+                total_demand_units: demand,
+                current_stock: stock,
+                units_to_order: demand - stock,
+                date_count: Math.floor(Math.random() * 8) + 1,
+              });
+          }
+        }
+        // aggregate mock by product
+        const agg = {};
+        restock.forEach((r) => {
+          if (!agg[r.product_id]) {
+            agg[r.product_id] = { ...r };
+          } else {
+            agg[r.product_id].total_demand_units += r.total_demand_units;
+            agg[r.product_id].units_to_order += r.units_to_order;
+            agg[r.product_id].date_count += 1;
+            if (r.next_restock_date < agg[r.product_id].next_restock_date)
+              agg[r.product_id].next_restock_date = r.next_restock_date;
+          }
+        });
+        const ra = Object.values(agg).sort(
+          (a, b) => b.units_to_order - a.units_to_order,
+        );
+        return {
+          stats: {
+            total_baby_products: 312,
+            critical_skus_to_restock: ra.length,
+            total_demand_rows: preds.length,
+            model_mae: 15.46,
+            model_r2: 0.1033,
+          },
+          predictions: preds,
+          restock: ra,
+          eval_metrics: {
+            mae: 15.46,
+            rmse: 25.7,
+            r2: 0.1033,
+            within_7_days_pct: 33.5,
+            within_14_days_pct: 63.7,
+            best_iteration: 284,
+          },
+        };
+      }
+
+      /* ── Fetch ── */
+      async function fetchData() {
+        if (USE_MOCK) {
+          await new Promise((r) => setTimeout(r, 500));
+          setStatus(true);
+          return generateMock();
+        }
+        try {
+          const [pr, rr, mr] = await Promise.all([
+            fetch(`${API_BASE}/api/predictions`),
+            fetch(`${API_BASE}/api/restock`),
+          ]);
+          if (!pr.ok) throw new Error(`/api/predictions ${pr.status}`);
+          if (!rr.ok) throw new Error(`/api/restock ${rr.status}`);
+          const pj = await pr.json(),
+            rj = await rr.json(),
+            mj = mr.ok ? await mr.json() : {};
+          setStatus(true);
+          return {
+            stats: rj.stats || pj.stats || {},
+            predictions: pj.predictions || [],
+            restock: rj.restock_list || [],
+            eval_metrics: mj.metrics || {},
+          };
+        } catch (e) {
+          console.error(e);
+          setStatus(false);
+          toast("API error — demo data loaded");
+          return generateMock();
+        }
+      }
+
+      /* ── Animated counter ── */
+      function animateNum(el, target) {
+        const steps = 36,
+          dur = 700;
+        let step = 0;
+        const iv = setInterval(() => {
+          step++;
+          el.textContent = Math.round((step / steps) * target).toLocaleString();
+          if (step >= steps) {
+            el.textContent = target.toLocaleString();
+            clearInterval(iv);
+          }
+        }, dur / steps);
+      }
+
+      /* ── KPIs ── */
+      function renderKPIs(data) {
+        const s = data.stats,
+          r = data.restock;
+        animateNum(
+          document.getElementById("kpi-skus"),
+          s.total_baby_products || 0,
+        );
+        animateNum(
+          document.getElementById("kpi-critical"),
+          s.critical_skus_to_restock || 0,
+        );
+        animateNum(
+          document.getElementById("kpi-rows"),
+          s.total_demand_rows || 0,
+        );
+        const avg = r.length
+          ? Math.round(r.reduce((a, x) => a + x.units_to_order, 0) / r.length)
+          : 0;
+        animateNum(document.getElementById("kpi-avg"), avg);
+        const dates = data.predictions.map(
+          (p) => new Date(p.predicted_calendar_date),
+        );
+        const horizon = dates.length
+          ? Math.max(
+              0,
+              Math.round((Math.max(...dates) - new Date()) / 86400000),
+            )
+          : 0;
+        animateNum(document.getElementById("kpi-horizon"), horizon);
+      }
+
+      /* ── Chart ── */
+      let currentRange = 30;
+
+      function buildChartData(preds, days) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const b = {};
+        preds.forEach((p) => {
+          const d = new Date(p.predicted_calendar_date);
+          d.setHours(0, 0, 0, 0);
+          const diff = (d - today) / 86400000;
+          if (diff < 0 || (days > 0 && diff > days)) return;
+          const k = d.toISOString().split("T")[0];
+          b[k] = (b[k] || 0) + p.predicted_demand_units;
+        });
+        const labels = Object.keys(b).sort();
+        return { labels, values: labels.map((k) => b[k]) };
+      }
+
+      function initChart() {
+        const ctx = document.getElementById("demandChart").getContext("2d");
+        demandChart = new Chart(ctx, {
+          type: "bar",
+          data: {
+            labels: [],
+            datasets: [
+              {
+                label: "Demand Units",
+                data: [],
+                backgroundColor: "#d1e9df",
+                borderColor: "#2d6a4f",
+                borderWidth: 1.5,
+                borderRadius: 3,
+                hoverBackgroundColor: "#b7ddd0",
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: "index", intersect: false },
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                backgroundColor: "#fff",
+                borderColor: "#e8e8e4",
+                borderWidth: 1,
+                titleColor: "#1a1a18",
+                bodyColor: "#888880",
+                padding: 10,
+                callbacks: {
+                  title: (i) => i[0].label,
+                  label: (i) => `  ${i.raw} units forecast`,
+                },
+              },
+            },
+            scales: {
+              x: {
+                ticks: {
+                  color: "#b8b8b0",
+                  font: { family: "DM Mono", size: 10 },
+                  maxTicksLimit: 14,
+                  callback: function (v) {
+                    const l = this.getLabelForValue(v);
+                    return l ? l.slice(5) : "";
+                  },
+                },
+                grid: { color: "#f0f0ec" },
+              },
+              y: {
+                ticks: {
+                  color: "#b8b8b0",
+                  font: { family: "DM Mono", size: 10 },
+                },
+                grid: { color: "#f0f0ec" },
+              },
+            },
+          },
+        });
+      }
+
+      function setChartRange(days, btn) {
+        currentRange = days;
+        document
+          .querySelectorAll(".range-btn")
+          .forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        updateChart();
+      }
+
+      function updateChart() {
+        const cd = buildChartData(allPred, currentRange);
+        demandChart.data.labels = cd.labels;
+        demandChart.data.datasets[0].data = cd.values;
+        demandChart.update("active");
+        document.getElementById("chartBadge").textContent =
+          cd.labels.length + " days";
+      }
+
+      /* ── Urgency helpers ── */
+      function pillFor(n) {
+        if (n > 20) return `<span class="pill pill-red">Critical</span>`;
+        if (n > 10) return `<span class="pill pill-amber">High</span>`;
+        if (n >= 5) return `<span class="pill pill-blue">Medium</span>`;
+        return `<span class="pill pill-green">Low</span>`;
+      }
+      function barColor(n) {
+        if (n > 20) return "var(--warn)";
+        if (n > 10) return "var(--amber)";
+        if (n >= 5) return "var(--blue)";
+        return "var(--accent)";
+      }
+
+      /* ── Restock table ── */
+      function renderRestockTable(rows) {
+        const tbody = document.getElementById("restockBody");
+        if (!rows.length) {
+          tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--soft);padding:28px">No matching rows</td></tr>`;
+          document.getElementById("tableFooter").textContent = "";
+          return;
+        }
+        const max = Math.max(...rows.map((r) => r.units_to_order));
+        tbody.innerHTML = rows
+          .slice(0, 300)
+          .map((r) => {
+            const pct = Math.round((r.units_to_order / max) * 100);
+            const ds = (r.next_restock_date || "").split("T")[0];
+            return `<tr>
+      <td class="mono" style="color:var(--accent)">#${r.product_id}</td>
+      <td class="mono" style="color:var(--muted)">${ds}</td>
+      <td>${r.total_demand_units}</td>
+      <td>${r.current_stock}</td>
+      <td><div class="mini-bar">
+        <span class="mono" style="min-width:22px;color:${barColor(r.units_to_order)}">${r.units_to_order}</span>
+        <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${barColor(r.units_to_order)}"></div></div>
+      </div></td>
+      <td class="mono" style="color:var(--muted)">${r.date_count}d</td>
+      <td>${pillFor(r.units_to_order)}</td>
+    </tr>`;
+          })
+          .join("");
+        document.getElementById("tableFooter").textContent =
+          `Showing ${Math.min(rows.length, 300)} of ${rows.length} SKUs`;
+      }
+
+      function filterTable() {
+        const q = document.getElementById("searchInput").value.trim();
+        const u = document.getElementById("urgencyFilter").value;
+        let rows = [...allRestock];
+        if (q) rows = rows.filter((r) => String(r.product_id).includes(q));
+        if (u !== "all")
+          rows = rows.filter((r) => {
+            const x = r.units_to_order;
+            if (u === "critical") return x > 20;
+            if (u === "high") return x > 10 && x <= 20;
+            if (u === "medium") return x >= 5 && x <= 10;
+            if (u === "low") return x >= 1 && x < 5;
+          });
+        rows.sort(
+          (a, b) =>
+            (a[sortState.col] > b[sortState.col] ? 1 : -1) * sortState.dir,
+        );
+        renderRestockTable(rows);
+      }
+
+      function sortTable(col) {
+        if (sortState.col === col) sortState.dir *= -1;
+        else {
+          sortState.col = col;
+          sortState.dir = -1;
+        }
+        document
+          .querySelectorAll("thead th")
+          .forEach((t) => t.classList.remove("sorted"));
+        document
+          .querySelector(`th[data-col="${col}"]`)
+          ?.classList.add("sorted");
+        filterTable();
+      }
+
+      /* ── Urgency panel ── */
+      function renderUrgency(rows) {
+        document.getElementById("urg-critical").textContent = rows.filter(
+          (r) => r.units_to_order > 20,
+        ).length;
+        document.getElementById("urg-high").textContent = rows.filter(
+          (r) => r.units_to_order > 10 && r.units_to_order <= 20,
+        ).length;
+        document.getElementById("urg-medium").textContent = rows.filter(
+          (r) => r.units_to_order >= 5 && r.units_to_order <= 10,
+        ).length;
+        document.getElementById("urg-low").textContent = rows.filter(
+          (r) => r.units_to_order >= 1 && r.units_to_order < 5,
+        ).length;
+      }
+
+      /* ── Upcoming 7 days ── */
+      function renderUpcoming(restock) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const cutoff = new Date(today);
+        cutoff.setDate(today.getDate() + 7);
+        const items = restock
+          .filter((r) => {
+            const d = new Date(r.next_restock_date);
+            d.setHours(0, 0, 0, 0);
+            return d >= today && d <= cutoff;
+          })
+          .slice(0, 6);
+        const el = document.getElementById("upcomingList");
+        if (!items.length) {
+          el.innerHTML = `<div style="padding:20px;color:var(--soft);font-size:13px">No restocks due in the next 7 days.</div>`;
+          return;
+        }
+        el.innerHTML = items
+          .map((r, i) => {
+            const ds = (r.next_restock_date || "").split("T")[0];
+            return `<div class="tl-row">
+      <div class="tl-index">${String(i + 1).padStart(2, "0")}</div>
+      <div>
+        <div class="tl-pid">#${r.product_id}</div>
+        <div class="tl-date">From ${ds} · ${r.date_count} date${r.date_count > 1 ? "s" : ""}</div>
+      </div>
+      <div class="tl-qty" style="color:${barColor(r.units_to_order)}">${r.units_to_order} units</div>
+    </div>`;
+          })
+          .join("");
+      }
+
+      /* ── Export CSV ── */
+      function exportCSV() {
+        if (!allRestock.length) {
+          toast("No data to export");
+          return;
+        }
+        const h = [
+          "product_id",
+          "next_restock_date",
+          "total_demand_units",
+          "current_stock",
+          "units_to_order",
+          "date_count",
+        ];
+        const csv = [
+          h.join(","),
+          ...allRestock.map((r) => h.map((k) => r[k]).join(",")),
+        ].join("\n");
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+        a.download = `peeko_restock_${new Date().toISOString().split("T")[0]}.csv`;
+        a.click();
+        toast("Exported restock CSV");
+      }
+
+      /* ── Refresh ── */
+      function refreshData() {
+        toast("Refreshing…");
+        loadAll();
+      }
+
+      /* ── Boot ── */
+      async function loadAll() {
+        initChart();
+        const data = await fetchData();
+        allRestock = data.restock;
+        allPred = data.predictions;
+        renderKPIs(data);
+        renderRestockTable(allRestock);
+        renderUrgency(allRestock);
+        renderUpcoming(allRestock);
+        updateChart();
+        document.getElementById("restockBadge").textContent =
+          allRestock.length + " SKUs";
+      }
+
+      loadAll();
+    </script>
+  </body>
+</html>

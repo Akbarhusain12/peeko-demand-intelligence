@@ -1,0 +1,4 @@
+Data/
+peekovenv/
+__pycache__/
+*.pyc
